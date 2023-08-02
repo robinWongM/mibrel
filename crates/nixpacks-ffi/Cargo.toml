@@ -1,0 +1,19 @@
+[package]
+name = "nixpacks-ffi"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+uniffi = { version = "0.23.0" }
+nixpacks = "1.11.0"
+prost = "0.11.9"
+serde = "1.0.177"
+
+[build-dependencies]
+uniffi = { version = "0.23.0", features = [ "build" ] }
+
+[lib]
+crate-type = ["cdylib"]
+name = "nixpacks_ffi"
