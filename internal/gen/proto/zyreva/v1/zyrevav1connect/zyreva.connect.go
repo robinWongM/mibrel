@@ -21,8 +21,8 @@ import (
 const _ = connect_go.IsAtLeastVersion0_1_0
 
 const (
-	// GreetServiceName is the fully-qualified name of the GreetService service.
-	GreetServiceName = "zyreva.v1.GreetService"
+	// GitServiceName is the fully-qualified name of the GitService service.
+	GitServiceName = "zyreva.v1.GitService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -33,72 +33,72 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// GreetServiceGreetProcedure is the fully-qualified name of the GreetService's Greet RPC.
-	GreetServiceGreetProcedure = "/zyreva.v1.GreetService/Greet"
+	// GitServiceCloneProcedure is the fully-qualified name of the GitService's Clone RPC.
+	GitServiceCloneProcedure = "/zyreva.v1.GitService/Clone"
 )
 
-// GreetServiceClient is a client for the zyreva.v1.GreetService service.
-type GreetServiceClient interface {
-	Greet(context.Context, *connect_go.Request[v1.GreetRequest]) (*connect_go.Response[v1.GreetResponse], error)
+// GitServiceClient is a client for the zyreva.v1.GitService service.
+type GitServiceClient interface {
+	Clone(context.Context, *connect_go.Request[v1.CloneRequest]) (*connect_go.Response[v1.CloneResponse], error)
 }
 
-// NewGreetServiceClient constructs a client for the zyreva.v1.GreetService service. By default, it
-// uses the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and sends
+// NewGitServiceClient constructs a client for the zyreva.v1.GitService service. By default, it uses
+// the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and sends
 // uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or
 // connect.WithGRPCWeb() options.
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewGreetServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) GreetServiceClient {
+func NewGitServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) GitServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
-	return &greetServiceClient{
-		greet: connect_go.NewClient[v1.GreetRequest, v1.GreetResponse](
+	return &gitServiceClient{
+		clone: connect_go.NewClient[v1.CloneRequest, v1.CloneResponse](
 			httpClient,
-			baseURL+GreetServiceGreetProcedure,
+			baseURL+GitServiceCloneProcedure,
 			opts...,
 		),
 	}
 }
 
-// greetServiceClient implements GreetServiceClient.
-type greetServiceClient struct {
-	greet *connect_go.Client[v1.GreetRequest, v1.GreetResponse]
+// gitServiceClient implements GitServiceClient.
+type gitServiceClient struct {
+	clone *connect_go.Client[v1.CloneRequest, v1.CloneResponse]
 }
 
-// Greet calls zyreva.v1.GreetService.Greet.
-func (c *greetServiceClient) Greet(ctx context.Context, req *connect_go.Request[v1.GreetRequest]) (*connect_go.Response[v1.GreetResponse], error) {
-	return c.greet.CallUnary(ctx, req)
+// Clone calls zyreva.v1.GitService.Clone.
+func (c *gitServiceClient) Clone(ctx context.Context, req *connect_go.Request[v1.CloneRequest]) (*connect_go.Response[v1.CloneResponse], error) {
+	return c.clone.CallUnary(ctx, req)
 }
 
-// GreetServiceHandler is an implementation of the zyreva.v1.GreetService service.
-type GreetServiceHandler interface {
-	Greet(context.Context, *connect_go.Request[v1.GreetRequest]) (*connect_go.Response[v1.GreetResponse], error)
+// GitServiceHandler is an implementation of the zyreva.v1.GitService service.
+type GitServiceHandler interface {
+	Clone(context.Context, *connect_go.Request[v1.CloneRequest]) (*connect_go.Response[v1.CloneResponse], error)
 }
 
-// NewGreetServiceHandler builds an HTTP handler from the service implementation. It returns the
-// path on which to mount the handler and the handler itself.
+// NewGitServiceHandler builds an HTTP handler from the service implementation. It returns the path
+// on which to mount the handler and the handler itself.
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewGreetServiceHandler(svc GreetServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	greetServiceGreetHandler := connect_go.NewUnaryHandler(
-		GreetServiceGreetProcedure,
-		svc.Greet,
+func NewGitServiceHandler(svc GitServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
+	gitServiceCloneHandler := connect_go.NewUnaryHandler(
+		GitServiceCloneProcedure,
+		svc.Clone,
 		opts...,
 	)
-	return "/zyreva.v1.GreetService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return "/zyreva.v1.GitService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case GreetServiceGreetProcedure:
-			greetServiceGreetHandler.ServeHTTP(w, r)
+		case GitServiceCloneProcedure:
+			gitServiceCloneHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
 	})
 }
 
-// UnimplementedGreetServiceHandler returns CodeUnimplemented from all methods.
-type UnimplementedGreetServiceHandler struct{}
+// UnimplementedGitServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedGitServiceHandler struct{}
 
-func (UnimplementedGreetServiceHandler) Greet(context.Context, *connect_go.Request[v1.GreetRequest]) (*connect_go.Response[v1.GreetResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("zyreva.v1.GreetService.Greet is not implemented"))
+func (UnimplementedGitServiceHandler) Clone(context.Context, *connect_go.Request[v1.CloneRequest]) (*connect_go.Response[v1.CloneResponse], error) {
+	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("zyreva.v1.GitService.Clone is not implemented"))
 }

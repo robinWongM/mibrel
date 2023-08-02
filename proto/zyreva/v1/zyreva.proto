@@ -2,16 +2,14 @@ syntax = "proto3";
 
 package zyreva.v1;
 
-option go_package = "example/gen/greet/v1;greetv1";
-
-message GreetRequest {
-  string name = 1;
+message CloneRequest {
+  string url = 1;
 }
 
-message GreetResponse {
-  string greeting = 1;
+message CloneResponse {
+  string destination = 1;
 }
 
-service GreetService {
-  rpc Greet(GreetRequest) returns (GreetResponse) {}
+service GitService {
+  rpc Clone(CloneRequest) returns (CloneResponse) {}
 }

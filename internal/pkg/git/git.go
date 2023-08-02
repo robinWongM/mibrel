@@ -7,10 +7,13 @@ import (
 )
 
 func Clone(url string) string {
-	// create a temp dir
-	dir := os.TempDir()
+	// create a new empty random temp dir
+	dir, err := os.MkdirTemp("", "zyreva-git-")
+	if err != nil {
+		panic(err)
+	}
 
-	_, err := git.PlainClone(dir, false, &git.CloneOptions{
+	_, err = git.PlainClone(dir, false, &git.CloneOptions{
 		URL: url,
 	})
 
