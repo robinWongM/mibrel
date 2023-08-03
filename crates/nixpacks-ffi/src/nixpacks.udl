@@ -1,3 +1,36 @@
+dictionary StartPhase {
+  string? cmd;
+  string? run_image;
+  sequence<string>? only_include_files;
+};
+
+dictionary Phase {
+  string? name;
+  sequence<string>? depends_on;
+  sequence<string>? nix_pkgs;
+  sequence<string>? nix_libs;
+  sequence<string>? nix_overlays;
+  string? nixpkgs_archive;
+  sequence<string>? apt_pkgs;
+  sequence<string>? cmds;
+  sequence<string>? only_include_files;
+  sequence<string>? cache_directories;
+  sequence<string>? paths;
+};
+
+dictionary BuildPlanWithHashMap {
+  sequence<string>? providers;
+  string? build_image;
+  BTreeMapSS? variables;
+  BTreeMapSS? static_assets;
+  record<string, Phase>? phases;
+  StartPhase? start_phase;
+};
+
 namespace nixpacks {
   sequence<string> get_plan_providers(string path, sequence<string> envs);
+  BuildPlanWithHashMap generate_build_plan(string path, sequence<string> envs);
 };
+
+[Custom]
+typedef record<string, string> BTreeMapSS;

@@ -47,28 +47,34 @@ typedef struct RustCallStatus {
 // ⚠️ increment the version suffix in all instances of UNIFFI_SHARED_HEADER_V4 in this file.           ⚠️
 #endif // def UNIFFI_SHARED_H
 
-RustBuffer nixpacks_65e0_get_plan_providers(
+RustBuffer nixpacks_e158_get_plan_providers(
 	RustBuffer path,
 	RustBuffer envs,
 	RustCallStatus* out_status
 );
 
-RustBuffer ffi_nixpacks_65e0_rustbuffer_alloc(
+RustBuffer nixpacks_e158_generate_build_plan(
+	RustBuffer path,
+	RustBuffer envs,
+	RustCallStatus* out_status
+);
+
+RustBuffer ffi_nixpacks_e158_rustbuffer_alloc(
 	int32_t size,
 	RustCallStatus* out_status
 );
 
-RustBuffer ffi_nixpacks_65e0_rustbuffer_from_bytes(
+RustBuffer ffi_nixpacks_e158_rustbuffer_from_bytes(
 	ForeignBytes bytes,
 	RustCallStatus* out_status
 );
 
-void ffi_nixpacks_65e0_rustbuffer_free(
+void ffi_nixpacks_e158_rustbuffer_free(
 	RustBuffer buf,
 	RustCallStatus* out_status
 );
 
-RustBuffer ffi_nixpacks_65e0_rustbuffer_reserve(
+RustBuffer ffi_nixpacks_e158_rustbuffer_reserve(
 	RustBuffer buf,
 	int32_t additional,
 	RustCallStatus* out_status
@@ -131,7 +137,7 @@ func stringToCRustBuffer(str string) C.RustBuffer {
 
 func (rb rustBuffer) free() {
 	rustCall(func(status *C.RustCallStatus) bool {
-		C.ffi_nixpacks_65e0_rustbuffer_free(rb.self, status)
+		C.ffi_nixpacks_e158_rustbuffer_free(rb.self, status)
 		return false
 	})
 }
@@ -411,6 +417,370 @@ type FfiDestroyerstring struct{}
 
 func (FfiDestroyerstring) destroy(_ string) {}
 
+type BuildPlanWithHashMap struct {
+	Providers    *[]string
+	BuildImage   *string
+	Variables    *BTreeMapSS
+	StaticAssets *BTreeMapSS
+	Phases       *map[string]Phase
+	StartPhase   *StartPhase
+}
+
+func (r *BuildPlanWithHashMap) Destroy() {
+	FfiDestroyerOptionalSequencestring{}.destroy(r.Providers)
+	FfiDestroyerOptionalstring{}.destroy(r.BuildImage)
+	FfiDestroyerOptionalTypeBTreeMapSs{}.destroy(r.Variables)
+	FfiDestroyerOptionalTypeBTreeMapSs{}.destroy(r.StaticAssets)
+	FfiDestroyerOptionalMapstringPhase{}.destroy(r.Phases)
+	FfiDestroyerOptionalTypeStartPhase{}.destroy(r.StartPhase)
+}
+
+type FfiConverterTypeBuildPlanWithHashMap struct{}
+
+var FfiConverterTypeBuildPlanWithHashMapINSTANCE = FfiConverterTypeBuildPlanWithHashMap{}
+
+func (c FfiConverterTypeBuildPlanWithHashMap) lift(cRustBuf C.RustBuffer) BuildPlanWithHashMap {
+	rustBuffer := fromCRustBuffer(cRustBuf)
+	return liftFromRustBuffer[BuildPlanWithHashMap](c, rustBuffer)
+}
+
+func (c FfiConverterTypeBuildPlanWithHashMap) read(reader io.Reader) BuildPlanWithHashMap {
+	return BuildPlanWithHashMap{
+		FfiConverterOptionalSequencestringINSTANCE.read(reader),
+		FfiConverterOptionalstringINSTANCE.read(reader),
+		FfiConverterOptionalTypeBTreeMapSsINSTANCE.read(reader),
+		FfiConverterOptionalTypeBTreeMapSsINSTANCE.read(reader),
+		FfiConverterOptionalMapstringPhaseINSTANCE.read(reader),
+		FfiConverterOptionalTypeStartPhaseINSTANCE.read(reader),
+	}
+}
+
+func (c FfiConverterTypeBuildPlanWithHashMap) lower(value BuildPlanWithHashMap) C.RustBuffer {
+	return lowerIntoRustBuffer[BuildPlanWithHashMap](c, value)
+}
+
+func (c FfiConverterTypeBuildPlanWithHashMap) write(writer io.Writer, value BuildPlanWithHashMap) {
+	FfiConverterOptionalSequencestringINSTANCE.write(writer, value.Providers)
+	FfiConverterOptionalstringINSTANCE.write(writer, value.BuildImage)
+	FfiConverterOptionalTypeBTreeMapSsINSTANCE.write(writer, value.Variables)
+	FfiConverterOptionalTypeBTreeMapSsINSTANCE.write(writer, value.StaticAssets)
+	FfiConverterOptionalMapstringPhaseINSTANCE.write(writer, value.Phases)
+	FfiConverterOptionalTypeStartPhaseINSTANCE.write(writer, value.StartPhase)
+}
+
+type FfiDestroyerTypeBuildPlanWithHashMap struct{}
+
+func (_ FfiDestroyerTypeBuildPlanWithHashMap) destroy(value BuildPlanWithHashMap) {
+	value.Destroy()
+}
+
+type Phase struct {
+	Name             *string
+	DependsOn        *[]string
+	NixPkgs          *[]string
+	NixLibs          *[]string
+	NixOverlays      *[]string
+	NixpkgsArchive   *string
+	AptPkgs          *[]string
+	Cmds             *[]string
+	OnlyIncludeFiles *[]string
+	CacheDirectories *[]string
+	Paths            *[]string
+}
+
+func (r *Phase) Destroy() {
+	FfiDestroyerOptionalstring{}.destroy(r.Name)
+	FfiDestroyerOptionalSequencestring{}.destroy(r.DependsOn)
+	FfiDestroyerOptionalSequencestring{}.destroy(r.NixPkgs)
+	FfiDestroyerOptionalSequencestring{}.destroy(r.NixLibs)
+	FfiDestroyerOptionalSequencestring{}.destroy(r.NixOverlays)
+	FfiDestroyerOptionalstring{}.destroy(r.NixpkgsArchive)
+	FfiDestroyerOptionalSequencestring{}.destroy(r.AptPkgs)
+	FfiDestroyerOptionalSequencestring{}.destroy(r.Cmds)
+	FfiDestroyerOptionalSequencestring{}.destroy(r.OnlyIncludeFiles)
+	FfiDestroyerOptionalSequencestring{}.destroy(r.CacheDirectories)
+	FfiDestroyerOptionalSequencestring{}.destroy(r.Paths)
+}
+
+type FfiConverterTypePhase struct{}
+
+var FfiConverterTypePhaseINSTANCE = FfiConverterTypePhase{}
+
+func (c FfiConverterTypePhase) lift(cRustBuf C.RustBuffer) Phase {
+	rustBuffer := fromCRustBuffer(cRustBuf)
+	return liftFromRustBuffer[Phase](c, rustBuffer)
+}
+
+func (c FfiConverterTypePhase) read(reader io.Reader) Phase {
+	return Phase{
+		FfiConverterOptionalstringINSTANCE.read(reader),
+		FfiConverterOptionalSequencestringINSTANCE.read(reader),
+		FfiConverterOptionalSequencestringINSTANCE.read(reader),
+		FfiConverterOptionalSequencestringINSTANCE.read(reader),
+		FfiConverterOptionalSequencestringINSTANCE.read(reader),
+		FfiConverterOptionalstringINSTANCE.read(reader),
+		FfiConverterOptionalSequencestringINSTANCE.read(reader),
+		FfiConverterOptionalSequencestringINSTANCE.read(reader),
+		FfiConverterOptionalSequencestringINSTANCE.read(reader),
+		FfiConverterOptionalSequencestringINSTANCE.read(reader),
+		FfiConverterOptionalSequencestringINSTANCE.read(reader),
+	}
+}
+
+func (c FfiConverterTypePhase) lower(value Phase) C.RustBuffer {
+	return lowerIntoRustBuffer[Phase](c, value)
+}
+
+func (c FfiConverterTypePhase) write(writer io.Writer, value Phase) {
+	FfiConverterOptionalstringINSTANCE.write(writer, value.Name)
+	FfiConverterOptionalSequencestringINSTANCE.write(writer, value.DependsOn)
+	FfiConverterOptionalSequencestringINSTANCE.write(writer, value.NixPkgs)
+	FfiConverterOptionalSequencestringINSTANCE.write(writer, value.NixLibs)
+	FfiConverterOptionalSequencestringINSTANCE.write(writer, value.NixOverlays)
+	FfiConverterOptionalstringINSTANCE.write(writer, value.NixpkgsArchive)
+	FfiConverterOptionalSequencestringINSTANCE.write(writer, value.AptPkgs)
+	FfiConverterOptionalSequencestringINSTANCE.write(writer, value.Cmds)
+	FfiConverterOptionalSequencestringINSTANCE.write(writer, value.OnlyIncludeFiles)
+	FfiConverterOptionalSequencestringINSTANCE.write(writer, value.CacheDirectories)
+	FfiConverterOptionalSequencestringINSTANCE.write(writer, value.Paths)
+}
+
+type FfiDestroyerTypePhase struct{}
+
+func (_ FfiDestroyerTypePhase) destroy(value Phase) {
+	value.Destroy()
+}
+
+type StartPhase struct {
+	Cmd              *string
+	RunImage         *string
+	OnlyIncludeFiles *[]string
+}
+
+func (r *StartPhase) Destroy() {
+	FfiDestroyerOptionalstring{}.destroy(r.Cmd)
+	FfiDestroyerOptionalstring{}.destroy(r.RunImage)
+	FfiDestroyerOptionalSequencestring{}.destroy(r.OnlyIncludeFiles)
+}
+
+type FfiConverterTypeStartPhase struct{}
+
+var FfiConverterTypeStartPhaseINSTANCE = FfiConverterTypeStartPhase{}
+
+func (c FfiConverterTypeStartPhase) lift(cRustBuf C.RustBuffer) StartPhase {
+	rustBuffer := fromCRustBuffer(cRustBuf)
+	return liftFromRustBuffer[StartPhase](c, rustBuffer)
+}
+
+func (c FfiConverterTypeStartPhase) read(reader io.Reader) StartPhase {
+	return StartPhase{
+		FfiConverterOptionalstringINSTANCE.read(reader),
+		FfiConverterOptionalstringINSTANCE.read(reader),
+		FfiConverterOptionalSequencestringINSTANCE.read(reader),
+	}
+}
+
+func (c FfiConverterTypeStartPhase) lower(value StartPhase) C.RustBuffer {
+	return lowerIntoRustBuffer[StartPhase](c, value)
+}
+
+func (c FfiConverterTypeStartPhase) write(writer io.Writer, value StartPhase) {
+	FfiConverterOptionalstringINSTANCE.write(writer, value.Cmd)
+	FfiConverterOptionalstringINSTANCE.write(writer, value.RunImage)
+	FfiConverterOptionalSequencestringINSTANCE.write(writer, value.OnlyIncludeFiles)
+}
+
+type FfiDestroyerTypeStartPhase struct{}
+
+func (_ FfiDestroyerTypeStartPhase) destroy(value StartPhase) {
+	value.Destroy()
+}
+
+type FfiConverterOptionalstring struct{}
+
+var FfiConverterOptionalstringINSTANCE = FfiConverterOptionalstring{}
+
+func (c FfiConverterOptionalstring) lift(cRustBuf C.RustBuffer) *string {
+	return liftFromRustBuffer[*string](c, fromCRustBuffer(cRustBuf))
+}
+
+func (_ FfiConverterOptionalstring) read(reader io.Reader) *string {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterstringINSTANCE.read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalstring) lower(value *string) C.RustBuffer {
+	return lowerIntoRustBuffer[*string](c, value)
+}
+
+func (_ FfiConverterOptionalstring) write(writer io.Writer, value *string) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterstringINSTANCE.write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalstring struct{}
+
+func (_ FfiDestroyerOptionalstring) destroy(value *string) {
+	if value != nil {
+		FfiDestroyerstring{}.destroy(*value)
+	}
+}
+
+type FfiConverterOptionalTypeStartPhase struct{}
+
+var FfiConverterOptionalTypeStartPhaseINSTANCE = FfiConverterOptionalTypeStartPhase{}
+
+func (c FfiConverterOptionalTypeStartPhase) lift(cRustBuf C.RustBuffer) *StartPhase {
+	return liftFromRustBuffer[*StartPhase](c, fromCRustBuffer(cRustBuf))
+}
+
+func (_ FfiConverterOptionalTypeStartPhase) read(reader io.Reader) *StartPhase {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterTypeStartPhaseINSTANCE.read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalTypeStartPhase) lower(value *StartPhase) C.RustBuffer {
+	return lowerIntoRustBuffer[*StartPhase](c, value)
+}
+
+func (_ FfiConverterOptionalTypeStartPhase) write(writer io.Writer, value *StartPhase) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterTypeStartPhaseINSTANCE.write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalTypeStartPhase struct{}
+
+func (_ FfiDestroyerOptionalTypeStartPhase) destroy(value *StartPhase) {
+	if value != nil {
+		FfiDestroyerTypeStartPhase{}.destroy(*value)
+	}
+}
+
+type FfiConverterOptionalSequencestring struct{}
+
+var FfiConverterOptionalSequencestringINSTANCE = FfiConverterOptionalSequencestring{}
+
+func (c FfiConverterOptionalSequencestring) lift(cRustBuf C.RustBuffer) *[]string {
+	return liftFromRustBuffer[*[]string](c, fromCRustBuffer(cRustBuf))
+}
+
+func (_ FfiConverterOptionalSequencestring) read(reader io.Reader) *[]string {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterSequencestringINSTANCE.read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalSequencestring) lower(value *[]string) C.RustBuffer {
+	return lowerIntoRustBuffer[*[]string](c, value)
+}
+
+func (_ FfiConverterOptionalSequencestring) write(writer io.Writer, value *[]string) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterSequencestringINSTANCE.write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalSequencestring struct{}
+
+func (_ FfiDestroyerOptionalSequencestring) destroy(value *[]string) {
+	if value != nil {
+		FfiDestroyerSequencestring{}.destroy(*value)
+	}
+}
+
+type FfiConverterOptionalMapstringPhase struct{}
+
+var FfiConverterOptionalMapstringPhaseINSTANCE = FfiConverterOptionalMapstringPhase{}
+
+func (c FfiConverterOptionalMapstringPhase) lift(cRustBuf C.RustBuffer) *map[string]Phase {
+	return liftFromRustBuffer[*map[string]Phase](c, fromCRustBuffer(cRustBuf))
+}
+
+func (_ FfiConverterOptionalMapstringPhase) read(reader io.Reader) *map[string]Phase {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterMapstringPhaseINSTANCE.read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalMapstringPhase) lower(value *map[string]Phase) C.RustBuffer {
+	return lowerIntoRustBuffer[*map[string]Phase](c, value)
+}
+
+func (_ FfiConverterOptionalMapstringPhase) write(writer io.Writer, value *map[string]Phase) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterMapstringPhaseINSTANCE.write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalMapstringPhase struct{}
+
+func (_ FfiDestroyerOptionalMapstringPhase) destroy(value *map[string]Phase) {
+	if value != nil {
+		FfiDestroyerMapstringPhase{}.destroy(*value)
+	}
+}
+
+type FfiConverterOptionalTypeBTreeMapSs struct{}
+
+var FfiConverterOptionalTypeBTreeMapSsINSTANCE = FfiConverterOptionalTypeBTreeMapSs{}
+
+func (c FfiConverterOptionalTypeBTreeMapSs) lift(cRustBuf C.RustBuffer) *BTreeMapSS {
+	return liftFromRustBuffer[*BTreeMapSS](c, fromCRustBuffer(cRustBuf))
+}
+
+func (_ FfiConverterOptionalTypeBTreeMapSs) read(reader io.Reader) *BTreeMapSS {
+	if readInt8(reader) == 0 {
+		return nil
+	}
+	temp := FfiConverterTypeBTreeMapSsINSTANCE.read(reader)
+	return &temp
+}
+
+func (c FfiConverterOptionalTypeBTreeMapSs) lower(value *BTreeMapSS) C.RustBuffer {
+	return lowerIntoRustBuffer[*BTreeMapSS](c, value)
+}
+
+func (_ FfiConverterOptionalTypeBTreeMapSs) write(writer io.Writer, value *BTreeMapSS) {
+	if value == nil {
+		writeInt8(writer, 0)
+	} else {
+		writeInt8(writer, 1)
+		FfiConverterTypeBTreeMapSsINSTANCE.write(writer, *value)
+	}
+}
+
+type FfiDestroyerOptionalTypeBTreeMapSs struct{}
+
+func (_ FfiDestroyerOptionalTypeBTreeMapSs) destroy(value *BTreeMapSS) {
+	if value != nil {
+		FfiDestroyerTypeBTreeMapSs{}.destroy(*value)
+	}
+}
+
 type FfiConverterSequencestring struct{}
 
 var FfiConverterSequencestringINSTANCE = FfiConverterSequencestring{}
@@ -454,10 +824,119 @@ func (FfiDestroyerSequencestring) destroy(sequence []string) {
 	}
 }
 
+type FfiConverterMapstringstring struct{}
+
+var FfiConverterMapstringstringINSTANCE = FfiConverterMapstringstring{}
+
+func (c FfiConverterMapstringstring) lift(cRustBuf C.RustBuffer) map[string]string {
+	rustBuffer := fromCRustBuffer(cRustBuf)
+	return liftFromRustBuffer[map[string]string](c, rustBuffer)
+}
+
+func (_ FfiConverterMapstringstring) read(reader io.Reader) map[string]string {
+	result := make(map[string]string)
+	length := readInt32(reader)
+	for i := int32(0); i < length; i++ {
+		key := FfiConverterstringINSTANCE.read(reader)
+		value := FfiConverterstringINSTANCE.read(reader)
+		result[key] = value
+	}
+	return result
+}
+
+func (c FfiConverterMapstringstring) lower(value map[string]string) C.RustBuffer {
+	return lowerIntoRustBuffer[map[string]string](c, value)
+}
+
+func (_ FfiConverterMapstringstring) write(writer io.Writer, mapValue map[string]string) {
+	if len(mapValue) > math.MaxInt32 {
+		panic("map[string]string is too large to fit into Int32")
+	}
+
+	writeInt32(writer, int32(len(mapValue)))
+	for key, value := range mapValue {
+		FfiConverterstringINSTANCE.write(writer, key)
+		FfiConverterstringINSTANCE.write(writer, value)
+	}
+}
+
+type FfiDestroyerMapstringstring struct{}
+
+func (_ FfiDestroyerMapstringstring) destroy(mapValue map[string]string) {
+	for key, value := range mapValue {
+		FfiDestroyerstring{}.destroy(key)
+		FfiDestroyerstring{}.destroy(value)
+	}
+}
+
+type FfiConverterMapstringPhase struct{}
+
+var FfiConverterMapstringPhaseINSTANCE = FfiConverterMapstringPhase{}
+
+func (c FfiConverterMapstringPhase) lift(cRustBuf C.RustBuffer) map[string]Phase {
+	rustBuffer := fromCRustBuffer(cRustBuf)
+	return liftFromRustBuffer[map[string]Phase](c, rustBuffer)
+}
+
+func (_ FfiConverterMapstringPhase) read(reader io.Reader) map[string]Phase {
+	result := make(map[string]Phase)
+	length := readInt32(reader)
+	for i := int32(0); i < length; i++ {
+		key := FfiConverterstringINSTANCE.read(reader)
+		value := FfiConverterTypePhaseINSTANCE.read(reader)
+		result[key] = value
+	}
+	return result
+}
+
+func (c FfiConverterMapstringPhase) lower(value map[string]Phase) C.RustBuffer {
+	return lowerIntoRustBuffer[map[string]Phase](c, value)
+}
+
+func (_ FfiConverterMapstringPhase) write(writer io.Writer, mapValue map[string]Phase) {
+	if len(mapValue) > math.MaxInt32 {
+		panic("map[string]Phase is too large to fit into Int32")
+	}
+
+	writeInt32(writer, int32(len(mapValue)))
+	for key, value := range mapValue {
+		FfiConverterstringINSTANCE.write(writer, key)
+		FfiConverterTypePhaseINSTANCE.write(writer, value)
+	}
+}
+
+type FfiDestroyerMapstringPhase struct{}
+
+func (_ FfiDestroyerMapstringPhase) destroy(mapValue map[string]Phase) {
+	for key, value := range mapValue {
+		FfiDestroyerstring{}.destroy(key)
+		FfiDestroyerTypePhase{}.destroy(value)
+	}
+}
+
+/**
+ * Typealias from the type name used in the UDL file to the builtin type.  This
+ * is needed because the UDL type name is used in function/method signatures.
+ * It's also what we have an external type that references a custom type.
+ */
+type BTreeMapSS = map[string]string
+type FfiConverterTypeBTreeMapSs = FfiConverterMapstringstring
+type FfiDestroyerTypeBTreeMapSs = FfiDestroyerMapstringstring
+
+var FfiConverterTypeBTreeMapSsINSTANCE = FfiConverterMapstringstring{}
+
 func GetPlanProviders(path string, envs []string) []string {
 
 	return FfiConverterSequencestringINSTANCE.lift(rustCall(func(_uniffiStatus *C.RustCallStatus) C.RustBuffer {
-		return C.nixpacks_65e0_get_plan_providers(FfiConverterstringINSTANCE.lower(path), FfiConverterSequencestringINSTANCE.lower(envs), _uniffiStatus)
+		return C.nixpacks_e158_get_plan_providers(FfiConverterstringINSTANCE.lower(path), FfiConverterSequencestringINSTANCE.lower(envs), _uniffiStatus)
+	}))
+
+}
+
+func GenerateBuildPlan(path string, envs []string) BuildPlanWithHashMap {
+
+	return FfiConverterTypeBuildPlanWithHashMapINSTANCE.lift(rustCall(func(_uniffiStatus *C.RustCallStatus) C.RustBuffer {
+		return C.nixpacks_e158_generate_build_plan(FfiConverterstringINSTANCE.lower(path), FfiConverterSequencestringINSTANCE.lower(envs), _uniffiStatus)
 	}))
 
 }

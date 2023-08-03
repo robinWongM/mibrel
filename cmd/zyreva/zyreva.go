@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -24,10 +25,12 @@ func (s *GitServer) Clone(
 	log.Println("Request headers: ", req.Header())
 
 	dest := git.Clone(req.Msg.Url)
-	pack.Build(dest)
+	plan := pack.Build(dest)
+
+	planStr, _ := json.Marshal(plan)
 
 	res := connect.NewResponse(&zyrevav1.CloneResponse{
-		Destination: dest,
+		Destination: string(planStr),
 	})
 
 	return res, nil
