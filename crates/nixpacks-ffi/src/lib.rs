@@ -16,7 +16,7 @@ impl UniffiCustomTypeConverter for BTreeMapSS {
     }
 }
 
-pub struct BuildPlanWithHashMap {
+pub struct BuildPlan {
     pub providers: Option<Vec<String>>,
     pub build_image: Option<String>,
     pub variables: Option<EnvironmentVariables>,
@@ -37,7 +37,7 @@ pub fn get_plan_providers(path: String, envs: Vec<String>) -> Vec<String> {
     .unwrap();
 }
 
-pub fn generate_build_plan(path: String, envs: Vec<String>) -> BuildPlanWithHashMap {
+pub fn generate_build_plan(path: String, envs: Vec<String>) -> BuildPlan {
     let build_plan = nixpacks::generate_build_plan(
         path.as_str(),
         envs.iter().map(|x| x.as_str()).collect(),
@@ -50,7 +50,7 @@ pub fn generate_build_plan(path: String, envs: Vec<String>) -> BuildPlanWithHash
 
     let phases: Option<HashMap<String, Phase>> = Some(build_plan.phases.unwrap().into_iter().collect());
 
-    return BuildPlanWithHashMap {
+    return BuildPlan {
         providers: build_plan.providers,
         build_image: build_plan.build_image,
         variables: build_plan.variables,

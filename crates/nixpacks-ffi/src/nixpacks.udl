@@ -18,7 +18,7 @@ dictionary Phase {
   sequence<string>? paths;
 };
 
-dictionary BuildPlanWithHashMap {
+dictionary BuildPlan {
   sequence<string>? providers;
   string? build_image;
   BTreeMapSS? variables;
@@ -29,7 +29,7 @@ dictionary BuildPlanWithHashMap {
 
 namespace nixpacks {
   sequence<string> get_plan_providers(string path, sequence<string> envs);
-  BuildPlanWithHashMap generate_build_plan(string path, sequence<string> envs);
+  BuildPlan generate_build_plan(string path, sequence<string> envs);
 };
 
 [Custom]
