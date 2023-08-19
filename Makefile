@@ -1,13 +1,4 @@
-bindgen-go:
-	uniffi-bindgen-go crates/nixpacks-ffi/src/nixpacks.udl -o internal/gen
-
-build-rust: $(shell find crates -type f)
-	cargo build
-
-build: build-rust bindgen-go
-	LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:${PWD}/target/debug/" \
-	CGO_LDFLAGS="-lnixpacks_ffi -L${PWD}/target/debug/ -lm -ldl" \
-	CGO_ENABLED=1 \
+build:
 	go build cmd/zyreva/zyreva.go
 
 call:
