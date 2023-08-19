@@ -24,6 +24,8 @@ elif [ "${USERNAME}" = "none" ] || ! id -u ${USERNAME} > /dev/null 2>&1; then
     USERNAME=root
 fi
 
+apt update && apt install -y protobuf-compiler libprotobuf-dev && apt-get clean
+
 su $USERNAME -s /bin/bash -c '
     # buf
     go install github.com/bufbuild/buf/cmd/buf@latest
@@ -33,7 +35,4 @@ su $USERNAME -s /bin/bash -c '
     go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
     # protoc-gen-connect-go
     go install github.com/bufbuild/connect-go/cmd/protoc-gen-connect-go@latest
-
-    # uniffi-bindgen-go
-    cargo install uniffi-bindgen-go --git https://github.com/NordSecurity/uniffi-bindgen-go
 '

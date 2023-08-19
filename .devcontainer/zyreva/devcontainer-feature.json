@@ -1,8 +1,5 @@
 {
     "id": "zyreva",
     "version": "1.0.0",
-    "name": "Zyreva",
-    "installsAfter": [
-        "ghcr.io/devcontainers/features/rust"
-    ]
+    "name": "Zyreva"
 }
