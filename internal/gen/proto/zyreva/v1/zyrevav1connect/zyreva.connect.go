@@ -21,8 +21,8 @@ import (
 const _ = connect_go.IsAtLeastVersion0_1_0
 
 const (
-	// GitServiceName is the fully-qualified name of the GitService service.
-	GitServiceName = "zyreva.v1.GitService"
+	// AppServiceName is the fully-qualified name of the AppService service.
+	AppServiceName = "zyreva.v1.AppService"
 )
 
 // These constants are the fully-qualified names of the RPCs defined in this package. They're
@@ -33,72 +33,72 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
-	// GitServiceCloneProcedure is the fully-qualified name of the GitService's Clone RPC.
-	GitServiceCloneProcedure = "/zyreva.v1.GitService/Clone"
+	// AppServiceAnalyzeProcedure is the fully-qualified name of the AppService's Analyze RPC.
+	AppServiceAnalyzeProcedure = "/zyreva.v1.AppService/Analyze"
 )
 
-// GitServiceClient is a client for the zyreva.v1.GitService service.
-type GitServiceClient interface {
-	Clone(context.Context, *connect_go.Request[v1.CloneRequest]) (*connect_go.Response[v1.CloneResponse], error)
+// AppServiceClient is a client for the zyreva.v1.AppService service.
+type AppServiceClient interface {
+	Analyze(context.Context, *connect_go.Request[v1.AnalyzeRequest]) (*connect_go.ServerStreamForClient[v1.AnalyzeResponse], error)
 }
 
-// NewGitServiceClient constructs a client for the zyreva.v1.GitService service. By default, it uses
+// NewAppServiceClient constructs a client for the zyreva.v1.AppService service. By default, it uses
 // the Connect protocol with the binary Protobuf Codec, asks for gzipped responses, and sends
 // uncompressed requests. To use the gRPC or gRPC-Web protocols, supply the connect.WithGRPC() or
 // connect.WithGRPCWeb() options.
 //
 // The URL supplied here should be the base URL for the Connect or gRPC server (for example,
 // http://api.acme.com or https://acme.com/grpc).
-func NewGitServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) GitServiceClient {
+func NewAppServiceClient(httpClient connect_go.HTTPClient, baseURL string, opts ...connect_go.ClientOption) AppServiceClient {
 	baseURL = strings.TrimRight(baseURL, "/")
-	return &gitServiceClient{
-		clone: connect_go.NewClient[v1.CloneRequest, v1.CloneResponse](
+	return &appServiceClient{
+		analyze: connect_go.NewClient[v1.AnalyzeRequest, v1.AnalyzeResponse](
 			httpClient,
-			baseURL+GitServiceCloneProcedure,
+			baseURL+AppServiceAnalyzeProcedure,
 			opts...,
 		),
 	}
 }
 
-// gitServiceClient implements GitServiceClient.
-type gitServiceClient struct {
-	clone *connect_go.Client[v1.CloneRequest, v1.CloneResponse]
+// appServiceClient implements AppServiceClient.
+type appServiceClient struct {
+	analyze *connect_go.Client[v1.AnalyzeRequest, v1.AnalyzeResponse]
 }
 
-// Clone calls zyreva.v1.GitService.Clone.
-func (c *gitServiceClient) Clone(ctx context.Context, req *connect_go.Request[v1.CloneRequest]) (*connect_go.Response[v1.CloneResponse], error) {
-	return c.clone.CallUnary(ctx, req)
+// Analyze calls zyreva.v1.AppService.Analyze.
+func (c *appServiceClient) Analyze(ctx context.Context, req *connect_go.Request[v1.AnalyzeRequest]) (*connect_go.ServerStreamForClient[v1.AnalyzeResponse], error) {
+	return c.analyze.CallServerStream(ctx, req)
 }
 
-// GitServiceHandler is an implementation of the zyreva.v1.GitService service.
-type GitServiceHandler interface {
-	Clone(context.Context, *connect_go.Request[v1.CloneRequest]) (*connect_go.Response[v1.CloneResponse], error)
+// AppServiceHandler is an implementation of the zyreva.v1.AppService service.
+type AppServiceHandler interface {
+	Analyze(context.Context, *connect_go.Request[v1.AnalyzeRequest], *connect_go.ServerStream[v1.AnalyzeResponse]) error
 }
 
-// NewGitServiceHandler builds an HTTP handler from the service implementation. It returns the path
+// NewAppServiceHandler builds an HTTP handler from the service implementation. It returns the path
 // on which to mount the handler and the handler itself.
 //
 // By default, handlers support the Connect, gRPC, and gRPC-Web protocols with the binary Protobuf
 // and JSON codecs. They also support gzip compression.
-func NewGitServiceHandler(svc GitServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
-	gitServiceCloneHandler := connect_go.NewUnaryHandler(
-		GitServiceCloneProcedure,
-		svc.Clone,
+func NewAppServiceHandler(svc AppServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
+	appServiceAnalyzeHandler := connect_go.NewServerStreamHandler(
+		AppServiceAnalyzeProcedure,
+		svc.Analyze,
 		opts...,
 	)
-	return "/zyreva.v1.GitService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return "/zyreva.v1.AppService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
-		case GitServiceCloneProcedure:
-			gitServiceCloneHandler.ServeHTTP(w, r)
+		case AppServiceAnalyzeProcedure:
+			appServiceAnalyzeHandler.ServeHTTP(w, r)
 		default:
 			http.NotFound(w, r)
 		}
 	})
 }
 
-// UnimplementedGitServiceHandler returns CodeUnimplemented from all methods.
-type UnimplementedGitServiceHandler struct{}
+// UnimplementedAppServiceHandler returns CodeUnimplemented from all methods.
+type UnimplementedAppServiceHandler struct{}
 
-func (UnimplementedGitServiceHandler) Clone(context.Context, *connect_go.Request[v1.CloneRequest]) (*connect_go.Response[v1.CloneResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("zyreva.v1.GitService.Clone is not implemented"))
+func (UnimplementedAppServiceHandler) Analyze(context.Context, *connect_go.Request[v1.AnalyzeRequest], *connect_go.ServerStream[v1.AnalyzeResponse]) error {
+	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("zyreva.v1.AppService.Analyze is not implemented"))
 }

@@ -10,3 +10,13 @@ plugins:
   - name: connect-go
     out: internal/gen
     opt: paths=source_relative
+  - plugin: es
+    out: packages
+    # With target=ts, we generate TypeScript files.
+    # Use target=js+dts to generate JavaScript and TypeScript declaration files
+    # like remote generation does.
+    opt: target=ts
+  - plugin: connect-es
+    out: packages
+    # With target=ts, we generate TypeScript files.
+    opt: target=ts

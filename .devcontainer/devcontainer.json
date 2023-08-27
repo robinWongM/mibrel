@@ -13,13 +13,17 @@
 			"version": "latest",
 			"dockerDashComposeVersion": "v2"
 		},
+		"ghcr.io/devcontainers/features/node:1": {},
 		"./zyreva": {}
 	},
 	"customizations": {
 		"vscode": {
 			"extensions": [
 				"zxh404.vscode-proto3",
-				"bufbuild.vscode-buf"
+				"bufbuild.vscode-buf",
+				"vue.volar",
+				"bradlc.vscode-tailwindcss",
+				"ckolkman.vscode-postgres"
 			]
 		}
 	}

@@ -1,12 +1,13 @@
 package git
 
 import (
+	"io"
 	"os"
 
 	"github.com/go-git/go-git/v5"
 )
 
-func Clone(url string) string {
+func Clone(url string, log io.Writer) string {
 	// create a new empty random temp dir
 	dir, err := os.MkdirTemp("", "zyreva-git-")
 	if err != nil {
@@ -14,7 +15,8 @@ func Clone(url string) string {
 	}
 
 	_, err = git.PlainClone(dir, false, &git.CloneOptions{
-		URL: url,
+		URL:      url,
+		Progress: log,
 	})
 
 	if err != nil {
