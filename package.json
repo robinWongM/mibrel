@@ -13,5 +13,6 @@
     "@bufbuild/buf": "^1.26.1",
     "@bufbuild/protoc-gen-connect-es": "^0.13.0",
     "@bufbuild/protoc-gen-es": "^1.3.0"
-  }
+  },
+  "workspaces": ["packages/*"]
 }

@@ -35,4 +35,7 @@ su $USERNAME -s /bin/bash -c '
     go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
     # protoc-gen-connect-go
     go install github.com/bufbuild/connect-go/cmd/protoc-gen-connect-go@latest
+
+    # bun
+    curl -fsSL https://bun.sh/install | bash
 '
