@@ -20,10 +20,10 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-
 WORKDIR /zyreva
 
-COPY ./ .
+COPY ./Cargo* .
+COPY ./crates ./crates
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/zyreva/target \
