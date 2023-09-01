@@ -1,0 +1,16 @@
+apiVersion: skaffold/v4beta6
+kind: Config
+metadata:
+  name: zyreva
+build:
+  artifacts:
+    - image: zyreva-server
+      docker:
+        dockerfile: crates/server/Dockerfile
+manifests:
+  rawYaml:
+    - crates/server/deployment.yaml
+portForward:
+  - resourceType: service
+    resourceName: zyreva-server
+    port: 3000

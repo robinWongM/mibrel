@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: zyreva-server
+  labels:
+    app: zyreva-server
+spec:
+  ports:
+  - port: 3000
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: zyreva-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zyreva-server
+  labels:
+    app: zyreva-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: zyreva-server
+  template:
+    metadata:
+      labels:
+        app: zyreva-server
+    spec:
+      containers:
+      - name: zyreva-server
+        image: zyreva-server

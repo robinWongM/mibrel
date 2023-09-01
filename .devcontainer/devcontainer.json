@@ -3,8 +3,7 @@
 {
 	"name": "Zyreva",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"dockerComposeFile": "docker-compose.yml",
-	"service": "app",
+	"image": "mcr.microsoft.com/devcontainers/rust:1",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
 	"features": {
 		"ghcr.io/devcontainers/features/docker-in-docker:2": {
@@ -19,14 +18,13 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"zxh404.vscode-proto3",
-				"bufbuild.vscode-buf",
 				"vue.volar",
 				"bradlc.vscode-tailwindcss",
 				"ckolkman.vscode-postgres"
 			]
 		}
-	}
+	},
+	"postStartCommand": "nohup bash -c 'minikube start &' > minikube.log 2>&1"
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},

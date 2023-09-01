@@ -24,18 +24,10 @@ elif [ "${USERNAME}" = "none" ] || ! id -u ${USERNAME} > /dev/null 2>&1; then
     USERNAME=root
 fi
 
-apt update && apt install -y protobuf-compiler libprotobuf-dev && apt-get clean
+# Install skaffold
+curl -Lo /usr/local/bin/skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
+chmod +x /usr/local/bin/skaffold
 
 su $USERNAME -s /bin/bash -c '
-    # buf
-    go install github.com/bufbuild/buf/cmd/buf@latest
-    # grpcurl
-    go install github.com/fullstorydev/grpcurl/cmd/grpcurl@latest
-    # protoc-gen-go
-    go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-    # protoc-gen-connect-go
-    go install github.com/bufbuild/connect-go/cmd/protoc-gen-connect-go@latest
-
-    # bun
-    curl -fsSL https://bun.sh/install | bash
+  # Placeholder
 '
