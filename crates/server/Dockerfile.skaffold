@@ -28,7 +28,7 @@ COPY ./crates ./crates
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/zyreva/target \
-    cargo build --verbose  && \
+    cargo build --verbose --features=k8s  && \
     cp /zyreva/target/debug/server /zyreva/server
 
 ####################################################################################################
@@ -46,6 +46,7 @@ WORKDIR /zyreva
 
 # Copy our build
 COPY --from=builder /zyreva/server ./
+COPY /crates/server/.env ./.env
 
 # Use an unprivileged user.
 USER zyreva:zyreva

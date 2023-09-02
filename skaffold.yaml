@@ -6,7 +6,7 @@ build:
   artifacts:
     - image: zyreva-server
       docker:
-        dockerfile: crates/server/Dockerfile
+        dockerfile: crates/server/Dockerfile.skaffold
 manifests:
   rawYaml:
     - .devcontainer/manifests/deployment.yaml

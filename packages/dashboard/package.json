@@ -1,5 +1,5 @@
 {
-  "name": "nuxt-app",
+  "name": "@zyreva/dashboard",
   "private": true,
   "scripts": {
     "build": "nuxt build",
@@ -21,7 +21,8 @@
   },
   "dependencies": {
     "@ark-ui/vue": "^0.6.0",
-    "@trpc/client": "^10.38.0",
+    "@rspc/client": "^0.1.3",
+    "@zyreva/rspc": "workspace:^",
     "trpc-nuxt": "^0.10.12",
     "zod": "^3.22.2"
   }
