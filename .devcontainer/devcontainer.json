@@ -24,7 +24,7 @@
 			]
 		}
 	},
-	"postStartCommand": "nohup bash -c 'minikube start &' > minikube.log 2>&1"
+	"postStartCommand": "nohup bash -c 'minikube start --cpus max --memory max &' > minikube.log 2>&1"
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
 	// "features": {},

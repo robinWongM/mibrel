@@ -1,7 +1,7 @@
 ####################################################################################################
 ## Builder
 ####################################################################################################
-FROM rust:1.72.0-alpine3.18 AS builder
+FROM rust:1.72.0-alpine3.18@sha256:2f5592c561cef195c9fa4462633a674458dc375fc0ba4b80e7efe4c3c8e68403 AS builder
 
 RUN apk add --no-cache musl-dev pkgconfig openssl openssl-dev
 ENV OPENSSL_LIB_DIR=/usr/lib
@@ -26,6 +26,7 @@ COPY ./Cargo* .
 COPY ./crates ./crates
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
+    --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/zyreva/target \
     cargo build --verbose  && \
     cp /zyreva/target/debug/server /zyreva/server
@@ -33,7 +34,7 @@ RUN --mount=type=cache,target=/usr/local/cargo/registry \
 ####################################################################################################
 ## Final image
 ####################################################################################################
-FROM alpine:3.18.3
+FROM alpine:3.18.3@sha256:7144f7bab3d4c2648d7e59409f15ec52a18006a128c733fcff20d3a4a54ba44a
 
 RUN apk add --no-cache openssl
 
