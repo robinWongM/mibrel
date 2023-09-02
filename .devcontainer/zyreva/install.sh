@@ -28,6 +28,11 @@ fi
 curl -Lo /usr/local/bin/skaffold https://storage.googleapis.com/skaffold/releases/latest/skaffold-linux-amd64
 chmod +x /usr/local/bin/skaffold
 
+# Install cmake for `libz-ng-sys` crate
+apt update && \
+apt install -y cmake && \
+apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
+
 su $USERNAME -s /bin/bash -c '
   # Placeholder
 '

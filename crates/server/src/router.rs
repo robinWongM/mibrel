@@ -1,5 +1,7 @@
+use git2::Repository;
 use rspc::{Router, RouterBuilder, Type};
 use serde::Deserialize;
+use tempfile;
 
 #[derive(Type, Deserialize)]
 struct CreateReq {
@@ -7,7 +9,26 @@ struct CreateReq {
 }
 
 fn create_user_router() -> RouterBuilder {
-    <Router>::new().mutation("create", |t| t(|ctx, input: CreateReq| input.git_url))
+    <Router>::new().mutation("create", |t| {
+        t(|ctx, input: CreateReq| {
+            let dir = tempfile::tempdir().unwrap();
+            println!("Created temp directory, {}", dir.path().display());
+
+            let repo = match Repository::clone(&input.git_url, dir.path()) {
+                Ok(repo) => repo,
+                Err(err) => panic!("failed to clone: {}", err),
+            };
+
+            println!("Cloned Git repository, {}", dir.path().display());
+
+            let head = repo.head().expect("No head found");
+            println!("Head! {}", dir.path().display());
+
+            let name = head.name().expect("No head name found");
+
+            String::from(name)
+        })
+    })
 }
 
 pub fn create_router() -> Router {

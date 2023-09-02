@@ -1,10 +1,19 @@
 mod router;
 
-use axum::{http::Method, routing::get};
-use router::create_router;
-use std::{net::{Ipv4Addr, SocketAddr}, path::PathBuf};
-use tower_http::cors::{Any, CorsLayer};
+use axum::{
+    error_handling::HandleErrorLayer,
+    http::{Method, StatusCode},
+    middleware::{map_request, map_response},
+    routing::get,
+};
 use clap::Parser;
+use router::create_router;
+use std::{
+    net::{Ipv4Addr, SocketAddr},
+    path::PathBuf,
+};
+use tower::{filter::AsyncFilterLayer, util::AndThenLayer, BoxError, ServiceBuilder};
+use tower_http::cors::{Any, CorsLayer};
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(Parser)]
@@ -32,7 +41,13 @@ async fn main() {
     let app = axum::Router::new()
         .route("/", get(|| async { "Hello 'rspc~'!" }))
         .nest("/rspc", router.endpoint(|| ()).axum())
-        .layer(cors);
+        .layer(cors)
+        .layer(HandleErrorLayer::new(|error| async move {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Unhandled internal error: {}", error),
+            )
+        }));
 
     let addr = SocketAddr::from((Ipv4Addr::UNSPECIFIED, 3000));
 

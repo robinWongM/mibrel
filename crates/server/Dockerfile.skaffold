@@ -3,9 +3,10 @@
 ####################################################################################################
 FROM rust:1.72.0-alpine3.18@sha256:2f5592c561cef195c9fa4462633a674458dc375fc0ba4b80e7efe4c3c8e68403 AS builder
 
-RUN apk add --no-cache musl-dev pkgconfig openssl openssl-dev
+# https://qiita.com/liubin/items/6c94f0b61f746c08b74c
+RUN apk add --no-cache musl-dev pkgconfig openssl-libs-static openssl-dev
 ENV OPENSSL_LIB_DIR=/usr/lib
-ENV OPENSSL_INCLUDE_DIR=/usr/include
+ENV OPENSSL_STATIC=true
 
 # Create appuser
 ENV USER=zyreva
@@ -28,7 +29,7 @@ COPY ./crates ./crates
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/zyreva/target \
-    cargo build --verbose --features=k8s  && \
+    cargo build --verbose --features=k8s && \
     cp /zyreva/target/debug/server /zyreva/server
 
 ####################################################################################################
