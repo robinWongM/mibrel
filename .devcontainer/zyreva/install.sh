@@ -34,5 +34,6 @@ apt install -y cmake && \
 apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
 su $USERNAME -s /bin/bash -c '
-  # Placeholder
+  # Install sea-orm-cli
+  cargo install sea-orm-cli
 '

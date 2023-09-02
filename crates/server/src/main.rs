@@ -1,3 +1,5 @@
+mod entities;
+mod migrator;
 mod router;
 
 use axum::{
@@ -5,24 +7,34 @@ use axum::{
     http::{Method, StatusCode},
     routing::get,
 };
-use clap::Parser;
-use router::create_router;
+use router::{create_router, Context};
+use sea_orm::{Database, DatabaseConnection, DbErr};
+use sea_orm_migration::{prelude::SchemaManager, MigratorTrait};
 use std::{
     net::{Ipv4Addr, SocketAddr},
     path::PathBuf,
+    sync::Arc,
 };
-use tower_http::cors::{Any, CorsLayer};
 use tokio::signal;
+use tower_http::cors::{Any, CorsLayer};
 
-/// Search for a pattern in a file and display the lines that contain it.
-#[derive(Parser)]
-struct Cli {
-    #[arg(long)]
-    generate_bindings: bool,
+const DATABASE_URL: &str = "postgres://zyreva:zyreva@db-postgresql:5432/zyreva";
+
+async fn connect_db() -> Result<DatabaseConnection, DbErr> {
+    let db = Database::connect(DATABASE_URL).await?;
+
+    let schema_manager = SchemaManager::new(&db);
+    migrator::Migrator::refresh(&db).await?;
+    assert!(schema_manager.has_table("application").await?);
+
+    Ok(db)
 }
 
 #[tokio::main]
 async fn main() {
+    let db = connect_db().await.expect("Failed to connect to database");
+    let db = Arc::new(db);
+
     let router = create_router().arced();
 
     #[cfg(all(debug_assertions, not(feature = "k8s")))] // Only export in development builds
@@ -39,7 +51,10 @@ async fn main() {
 
     let app = axum::Router::new()
         .route("/", get(|| async { "Hello 'rspc~'!" }))
-        .nest("/rspc", router.endpoint(|| ()).axum())
+        .nest(
+            "/rspc",
+            router.endpoint(move || Context { db: db.clone() }).axum(),
+        )
         .layer(cors)
         .layer(HandleErrorLayer::new(|error| async move {
             (
