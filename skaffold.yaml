@@ -9,7 +9,17 @@ build:
         dockerfile: crates/server/Dockerfile
 manifests:
   rawYaml:
-    - crates/server/deployment.yaml
+    - .devcontainer/manifests/deployment.yaml
+deploy:
+  helm:
+    releases:
+    - name: db
+      remoteChart: oci://registry-1.docker.io/bitnamicharts/postgresql
+      setValues:
+        auth:
+          username: zyreva
+          password: zyreva
+          database: zyreva
 portForward:
   - resourceType: service
     resourceName: zyreva-server
