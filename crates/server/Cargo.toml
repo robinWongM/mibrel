@@ -9,3 +9,5 @@ edition = "2021"
 axum = "0.6.20"
 serde = { features = ["derive"], version = "1.0.188" }
 tokio = { version = "1.32.0", default-features = false, features = ["macros", "fs", "rt-multi-thread"] }
+prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.9" }
+prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.9" }
