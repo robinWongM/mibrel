@@ -8,25 +8,26 @@ struct CreateReq {
     git_url: String,
 }
 
+fn to_rspc_error(err: impl std::fmt::Display) -> rspc::Error {
+    rspc::Error::new(rspc::ErrorCode::InternalServerError, err.to_string())
+}
+
 fn create_user_router() -> RouterBuilder {
-    <Router>::new().mutation("create", |t| {
+    Router::new().mutation("create", |t| {
         t(|ctx, input: CreateReq| {
-            let dir = tempfile::tempdir().unwrap();
+            let dir = tempfile::tempdir().map_err(to_rspc_error)?;
             println!("Created temp directory, {}", dir.path().display());
 
-            let repo = match Repository::clone(&input.git_url, dir.path()) {
-                Ok(repo) => repo,
-                Err(err) => panic!("failed to clone: {}", err),
-            };
+            let repo = Repository::clone(&input.git_url, dir.path()).map_err(to_rspc_error)?;
 
             println!("Cloned Git repository, {}", dir.path().display());
 
-            let head = repo.head().expect("No head found");
-            println!("Head! {}", dir.path().display());
+            // Get the latest commit message
+            let head = repo.head().map_err(to_rspc_error)?;
+            let head = head.peel_to_commit().map_err(to_rspc_error)?;
+            let message = head.message().unwrap_or("No commit message");
 
-            let name = head.name().expect("No head name found");
-
-            String::from(name)
+            Ok(String::from(message))
         })
     })
 }
