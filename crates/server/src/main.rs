@@ -3,7 +3,6 @@ mod router;
 use axum::{
     error_handling::HandleErrorLayer,
     http::{Method, StatusCode},
-    middleware::{map_request, map_response},
     routing::get,
 };
 use clap::Parser;
@@ -12,8 +11,8 @@ use std::{
     net::{Ipv4Addr, SocketAddr},
     path::PathBuf,
 };
-use tower::{filter::AsyncFilterLayer, util::AndThenLayer, BoxError, ServiceBuilder};
 use tower_http::cors::{Any, CorsLayer};
+use tokio::signal;
 
 /// Search for a pattern in a file and display the lines that contain it.
 #[derive(Parser)]
@@ -53,6 +52,33 @@ async fn main() {
 
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
+        .with_graceful_shutdown(shutdown_signal())
         .await
         .unwrap();
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl + C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    println!("signal received, starting graceful shutdown");
 }
