@@ -1,4 +1,4 @@
-use git2::Repository;
+use git2::{Repository, build::RepoBuilder, FetchOptions};
 use rspc::{Router, RouterBuilder, Type};
 use serde::Deserialize;
 use tempfile;
@@ -18,8 +18,14 @@ fn create_user_router() -> RouterBuilder {
             let dir = tempfile::tempdir().map_err(to_rspc_error)?;
             println!("Created temp directory, {}", dir.path().display());
 
-            let repo = Repository::clone(&input.git_url, dir.path()).map_err(to_rspc_error)?;
+            // Fetch the remote repository, with --depth 1
+            let mut builder = RepoBuilder::new();
+            let mut fetch_options = FetchOptions::new();
+            fetch_options.depth(1);
+            builder.fetch_options(fetch_options);
 
+            // Clone the repository
+            let repo = builder.clone(&input.git_url, dir.path()).map_err(to_rspc_error)?;
             println!("Cloned Git repository, {}", dir.path().display());
 
             // Get the latest commit message
