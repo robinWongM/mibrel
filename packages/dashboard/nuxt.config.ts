@@ -2,7 +2,4 @@
 export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ["@nuxtjs/tailwindcss", "nuxt-icon"],
-  devServer: {
-    port: 3001,
-  }
 })

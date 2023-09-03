@@ -20,3 +20,4 @@ clap = { version = "4.4.2", features = ["derive"] }
 git2 = { git = "https://github.com/rust-lang/git2-rs", rev = "c9250b401a80d196d93381804ed5598ca698e636", features = ["vendored-libgit2"] }
 tempfile = "3"
 tower = { version = "0.4.4", features = ["util", "filter"] }
+nixpacks = "1.13.0"

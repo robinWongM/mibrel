@@ -11,6 +11,6 @@ pub struct Context {
 pub fn create_router() -> Router<Context> {
     Router::<Context>::new()
         .query("version", |t| t(|ctx, input: ()| env!("CARGO_PKG_VERSION")))
-        .merge("apps.", application::create_user_router())
+        .merge("apps.", application::create_app_router())
         .build()
 }

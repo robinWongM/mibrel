@@ -32,15 +32,15 @@ async fn connect_db() -> Result<DatabaseConnection, DbErr> {
 
 #[tokio::main]
 async fn main() {
-    let db = connect_db().await.expect("Failed to connect to database");
-    let db = Arc::new(db);
-
     let router = create_router().arced();
 
     #[cfg(all(debug_assertions, not(feature = "k8s")))] // Only export in development builds
     router
         .export_ts(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../packages/rspc/index.ts"))
         .unwrap();
+
+    let db = connect_db().await.expect("Failed to connect to database");
+    let db = Arc::new(db);
 
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource

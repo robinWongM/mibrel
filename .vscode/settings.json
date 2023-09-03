@@ -1,8 +1,5 @@
 {
     "[vue]": {
         "editor.tabSize": 2
-    },
-    "rust-analyzer.linkedProjects": [
-        "./crates/server/migration/Cargo.toml"
-    ]
+    }
 }
