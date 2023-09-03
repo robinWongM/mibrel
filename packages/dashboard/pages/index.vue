@@ -11,7 +11,7 @@
         <z-card-header>{{ app.id }}</z-card-header>
         <z-card-content>
           <z-card-description>{{ app.git_url }}</z-card-description>
-          <z-button @click="() => analyze(app.id)">Analyze</z-button>
+          <z-button @click="() => build(app.id)" :is-loading="isBuildLoading">Build</z-button>
         </z-card-content>
       </z-card>
     </div>
@@ -23,10 +23,17 @@
 
 <script setup lang="ts">
 import { Model } from '@zyreva/rspc';
+import { WebsocketTransport, createClient } from '@rspc/client'
+import type { Procedures } from '@zyreva/rspc'
+
+const client = createClient<Procedures>({
+  transport: new WebsocketTransport("ws://localhost:3000/rspc/ws"),
+});
 
 const plan = ref('');
 const url = ref('https://github.com/skyzh/prisma-edge-vercel');
 const isLoading = ref(false);
+const isBuildLoading = ref(false);
 const apps = ref<Model[]>([]);
 
 const { $client } = useNuxtApp()
@@ -45,13 +52,22 @@ const create = () => {
   });
 }
 
-const analyze = (id: number) => {
-  isLoading.value = true;
-  $client.mutation(['apps.analyze', { id }]).then((res) => {
-    plan.value = res;
-  }).finally(() => {
-    isLoading.value = false;
-    refresh();
+const build = (id: number) => {
+  isBuildLoading.value = true;
+  // @ts-ignore
+  const unsubscribe = client.addSubscription(['apps.build', { id }], {
+    onData: (data) => {
+      plan.value += data + '\n';
+
+      if (data === 'Build complete') {
+        unsubscribe();
+        isBuildLoading.value = false;
+      }
+    },
+    onError: (err) => {
+      console.error(err);
+      isBuildLoading.value = false;
+    }
   });
 }
 

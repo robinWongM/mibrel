@@ -21,3 +21,6 @@ git2 = { git = "https://github.com/rust-lang/git2-rs", rev = "c9250b401a80d196d9
 tempfile = "3"
 tower = { version = "0.4.4", features = ["util", "filter"] }
 nixpacks = "1.13.0"
+bollard = { version = "0.14.0", features = ["buildkit"] }
+async-stream = "0.3.5"
+tokio-stream = "0.1.14"

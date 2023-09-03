@@ -1,15 +1,26 @@
-use std::path::{PathBuf, Path};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    sync::Arc, io::Stdout,
+};
 
 use git2::{build::RepoBuilder, FetchOptions};
 use rspc::{Router, RouterBuilder, Type};
 use serde::Deserialize;
 use tempfile;
+use tokio::{process::Command, io::AsyncBufReadExt, sync::mpsc::Sender};
 
 use crate::entities::{prelude::*, *};
 use sea_orm::*;
 
 use super::Context;
-use nixpacks::{generate_build_plan, nixpacks::plan::generator::GeneratePlanOptions};
+use nixpacks::{
+    create_docker_image, generate_build_plan,
+    nixpacks::{
+        builder::docker::DockerBuilderOptions,
+        plan::{generator::GeneratePlanOptions, BuildPlan},
+    },
+};
 
 #[derive(Type, Deserialize)]
 struct CreateReq {
@@ -53,40 +64,160 @@ pub fn create_app_router() -> RouterBuilder<Context> {
                 Ok(res.last_insert_id)
             })
         })
-        .mutation("analyze", |t| {
+        .query("analyze", |t| {
             t(|ctx: Context, input: AnalyzeRequest| async move {
                 let entity = Application::find_by_id(input.id)
                     .one(ctx.db.as_ref())
                     .await
-                    .expect("Failed to execute query")
-                    .expect("No application found");
+                    .map_err(to_rspc_error)?
+                    .ok_or_else(|| {
+                        rspc::Error::new(rspc::ErrorCode::NotFound, "Not found".to_string())
+                    })?;
 
-                let dir = tempfile::tempdir().expect("Failed to create temp directory");
+                let dir = tempfile::tempdir().or_else(|e| Err(to_rspc_error(e)))?;
                 println!("Created temp directory, {}", dir.path().display());
 
-                clone(dir.path(), &entity.git_url).expect("Failed to clone repository");
+                clone(dir.path(), &entity.git_url, None).map_err(to_rspc_error)?;
 
                 generate_build_plan(
                     dir.path().to_str().unwrap(),
                     vec![],
-                    &GeneratePlanOptions::default(),
+                    &GeneratePlanOptions {
+                        plan: Some(BuildPlan {
+                            providers: Some(vec!["...".to_string(), "staticfile".to_string()]),
+                            ..Default::default()
+                        }),
+                        ..Default::default()
+                    },
                 )
                 .and_then(|p| p.to_toml())
-                .expect("Failed to generate build plan")
+                .map_err(to_rspc_error)
+            })
+        })
+        .subscription("build", |t| {
+            t(|ctx: Context, input: AnalyzeRequest| {
+                async_stream::stream! {
+                    let (tx, mut rx) = tokio::sync::mpsc::channel(32);
+
+                    // Spawn the long-running operation as a separate task
+                    tokio::spawn(async move {
+                        let entity = Application::find_by_id(input.id)
+                            .one(ctx.db.as_ref())
+                            .await
+                            .map_err(to_rspc_error)?
+                            .ok_or_else(|| {
+                                rspc::Error::new(rspc::ErrorCode::NotFound, "Not found".to_string())
+                            })?;
+
+                        tx.send(format!("Git URL: {}", entity.git_url)).await.unwrap();
+
+                        let dir = tempfile::tempdir().or_else(|e| Err(to_rspc_error(e)))?;
+                        tx.send(format!("Created temp directory, {}", dir.path().display())).await.unwrap();
+
+                        clone(dir.path(), &entity.git_url, Some(&tx)).map_err(to_rspc_error)?;
+                        tx.send(format!("Cloned")).await.unwrap();
+
+                        let _ = create_docker_image(
+                            dir.path().to_str().unwrap(),
+                            vec![],
+                            &GeneratePlanOptions::default(),
+                            &DockerBuilderOptions {
+                                out_dir: Some(dir.path().display().to_string()),
+                                ..Default::default()
+                            },
+                        )
+                        .await
+                        .map_err(to_rspc_error)?;
+
+                        tx.send(format!("Generated Dockerfile")).await.unwrap();
+
+                        // Run command `buildctl`
+                        let mut buildctl = Command::new("buildctl");
+                        buildctl
+                            .arg("--addr")
+                            .arg("tcp://buildkitd:1234")
+                            .arg("build")
+                            .arg("--frontend")
+                            .arg("dockerfile.v0")
+                            .arg("--local")
+                            .arg(format!("context={}", dir.path().display()))
+                            .arg("--local")
+                            .arg(format!("dockerfile={}", dir.path().join(".nixpacks").display()))
+                            .arg("--output")
+                            .arg("type=oci,dest=/tmp/image.tar");
+
+                        // Stream output from the command
+                        let mut child = buildctl
+                            .stdout(std::process::Stdio::piped())
+                            .stderr(std::process::Stdio::piped())
+                            .spawn()
+                            .map_err(to_rspc_error)?;
+
+                        let mut stdout = tokio::io::BufReader::new(child.stdout.take().unwrap()).lines();
+                        let mut stderr = tokio::io::BufReader::new(child.stderr.take().unwrap()).lines();
+
+                        loop {
+                            tokio::select! {
+                                // Read a line from stdout
+                                Ok(line_result) = stdout.next_line() => {
+                                    if let Some(line) = line_result {
+                                        tx.send(line).await.expect("Failed to send to channel");
+                                    } else {
+                                        break;
+                                    }
+                                },
+                                // Read a line from stderr
+                                Ok(line_result) = stderr.next_line() => {
+                                    if let Some(line) = line_result {
+                                        tx.send(line).await.expect("Failed to send to channel");
+                                    } else {
+                                        break;
+                                    }
+                                },
+                                // Break when both stdout and stderr are closed
+                                else => {
+                                    break;
+                                }
+                            }
+                        }
+
+                        tx.send(format!("Build complete")).await.unwrap();
+
+                        Ok::<(), rspc::Error>(())
+                    });
+
+                    // In the main async stream, yield results from the channel
+                    while let Some(progress) = rx.recv().await {
+                        yield progress.to_string();
+                    }
+
+                    // The channel is closed, so the stream ends
+                    println!("Build complete");
+                }
             })
         })
 }
 
-fn clone(dir: &Path, url: &str) -> Result<String, rspc::Error> {
+fn clone(dir: &Path, url: &str, sender: Option<&Sender<String>>) -> Result<String, rspc::Error> {
     let mut remote_callbacks = git2::RemoteCallbacks::new();
     remote_callbacks.transfer_progress(|progress| {
-        println!(
-            "{}: {}/{}, {} bytes received",
+        let log = format!(
+            "[Git] {}: {}/{}, {} bytes received",
             progress.total_objects(),
             progress.indexed_objects(),
             progress.received_objects(),
             progress.received_bytes(),
         );
+        println!("{}", log);
+
+        if let Some(sender) = sender {
+            let sender_clone = sender.clone();
+            let log_clone = log.clone();
+            tokio::spawn(async move {
+                sender_clone.send(log_clone).await.unwrap();
+            });
+        }
+
         true
     });
 

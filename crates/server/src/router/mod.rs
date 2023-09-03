@@ -1,4 +1,5 @@
 mod application;
+use bollard::Docker;
 use rspc::Router;
 
 use std::sync::Arc;
@@ -6,6 +7,7 @@ use sea_orm::DatabaseConnection;
 
 pub struct Context {
     pub db: Arc<DatabaseConnection>,
+    pub docker: Arc<Docker>,
 }
 
 pub fn create_router() -> Router<Context> {

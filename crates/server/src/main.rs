@@ -7,6 +7,7 @@ use axum::{
     http::{Method, StatusCode},
     routing::get,
 };
+use bollard::Docker;
 use router::{create_router, Context};
 use sea_orm::{Database, DatabaseConnection, DbErr};
 use sea_orm_migration::{prelude::SchemaManager, MigratorTrait};
@@ -42,6 +43,9 @@ async fn main() {
     let db = connect_db().await.expect("Failed to connect to database");
     let db = Arc::new(db);
 
+    let docker = Docker::connect_with_local_defaults().unwrap();
+    let docker = Arc::new(docker);
+
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource
         .allow_methods([Method::GET, Method::POST])
@@ -53,7 +57,12 @@ async fn main() {
         .route("/", get(|| async { "Hello 'rspc~'!" }))
         .nest(
             "/rspc",
-            router.endpoint(move || Context { db: db.clone() }).axum(),
+            router
+                .endpoint(move || Context {
+                    db: db.clone(),
+                    docker: docker.clone(),
+                })
+                .axum(),
         )
         .layer(cors)
         .layer(HandleErrorLayer::new(|error| async move {

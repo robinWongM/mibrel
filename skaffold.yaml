@@ -10,6 +10,7 @@ build:
 manifests:
   rawYaml:
     - .devcontainer/manifests/deployment.yaml
+    - .devcontainer/manifests/buildkit.yaml
 deploy:
   helm:
     releases:

@@ -8,19 +8,6 @@ RUN apk add --no-cache musl-dev pkgconfig openssl-libs-static openssl-dev
 ENV OPENSSL_LIB_DIR=/usr/lib
 ENV OPENSSL_STATIC=true
 
-# Create appuser
-ENV USER=zyreva
-ENV UID=10001
-
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home "/nonexistent" \
-    --shell "/sbin/nologin" \
-    --no-create-home \
-    --uid "${UID}" \
-    "${USER}"
-
 WORKDIR /zyreva
 
 COPY ./Cargo* .
@@ -39,11 +26,22 @@ FROM alpine:3.18.3@sha256:7144f7bab3d4c2648d7e59409f15ec52a18006a128c733fcff20d3
 
 RUN apk add --no-cache openssl
 
-# Import from builder.
-COPY --from=builder /etc/passwd /etc/passwd
-COPY --from=builder /etc/group /etc/group
+# Create appuser
+ENV USER=zyreva
+ENV UID=10001
+
+RUN adduser \
+    --disabled-password \
+    --gecos "" \
+    --home "/home/${USER}" \
+    --shell "/sbin/nologin" \
+    --uid "${UID}" \
+    "${USER}"
 
 WORKDIR /zyreva
+
+# Install buildkit
+RUN wget -O - https://github.com/moby/buildkit/releases/download/v0.12.2/buildkit-v0.12.2.linux-amd64.tar.gz | tar -xz -C /usr/bin --strip-components=1 bin/buildctl
 
 # Copy our build
 COPY --from=builder /zyreva/server ./
