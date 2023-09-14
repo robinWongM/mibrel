@@ -46,6 +46,10 @@ async fn main() {
     let docker = Docker::connect_with_local_defaults().unwrap();
     let docker = Arc::new(docker);
 
+    // Infer the runtime environment and try to create a Kubernetes Client
+    let kube_client = kube::Client::try_default().await.unwrap();
+    let kube_client = Arc::new(kube_client);
+
     let cors = CorsLayer::new()
         // allow `GET` and `POST` when accessing the resource
         .allow_methods([Method::GET, Method::POST])
@@ -61,6 +65,7 @@ async fn main() {
                 .endpoint(move || Context {
                     db: db.clone(),
                     docker: docker.clone(),
+                    kube_client: kube_client.clone(),
                 })
                 .axum(),
         )

@@ -12,6 +12,7 @@
         <z-card-content>
           <z-card-description>{{ app.git_url }}</z-card-description>
           <z-button @click="() => build(app.id)" :is-loading="isBuildLoading">Build</z-button>
+          <z-button @click="() => deploy(app.id)" :is-loading="isBuildLoading">Deploy</z-button>
         </z-card-content>
       </z-card>
     </div>
@@ -49,6 +50,12 @@ const create = () => {
   $client.mutation(['apps.create', { git_url: url.value }]).finally(() => {
     isLoading.value = false;
     refresh();
+  });
+}
+
+const deploy = (id: number) => {
+  $client.mutation(['apps.deploy', { id }]).then((res) => {
+    plan.value = res;
   });
 }
 

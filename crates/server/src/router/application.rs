@@ -5,6 +5,8 @@ use std::{
 };
 
 use git2::{build::RepoBuilder, FetchOptions};
+use k8s_openapi::{api::{apps::v1::Deployment, core::v1::{Pod, Service}}, serde_json::{json, self}};
+use kube::{Api, api::PostParams, ResourceExt};
 use rspc::{Router, RouterBuilder, Type};
 use serde::Deserialize;
 use tempfile;
@@ -196,6 +198,51 @@ pub fn create_app_router() -> RouterBuilder<Context> {
 
                     // The channel is closed, so the stream ends
                     println!("Build complete");
+                }
+            })
+        })
+        .mutation("deploy", |t| {
+            t(|ctx: Context, input: AnalyzeRequest| async move {
+                // let entity = Application::find_by_id(input.id)
+                //     .one(ctx.db.as_ref())
+                //     .await
+                //     .map_err(to_rspc_error)?
+                //     .ok_or_else(|| {
+                //         rspc::Error::new(rspc::ErrorCode::NotFound, "Not found".to_string())
+                //     })?;
+
+                let client = kube::Client::try_default().await.map_err(to_rspc_error)?;
+
+                let services: Api<Service> = Api::default_namespaced(client.clone());
+                let s = services.get("registry").await.map_err(to_rspc_error)?;
+
+                let ip = s.spec.ok_or("No spec").map_err(to_rspc_error)?.cluster_ip.ok_or("No cluster IP").map_err(to_rspc_error)?;
+                
+                let image_url = format!("{}{}/{}:{}", ip, ":5000", "test", "latest");
+
+                let pods: Api<Pod> = Api::default_namespaced(client);
+
+                let p: Pod = serde_json::from_value(json!({
+                    "apiVersion": "v1",
+                    "kind": "Pod",
+                    "metadata": { "name": "blog" },
+                    "spec": {
+                        "containers": [{
+                          "name": "blog",
+                          "image": image_url,
+                        }],
+                    }
+                })).map_err(to_rspc_error)?;
+
+                let pp = PostParams::default();
+                match pods.create(&pp, &p).await {
+                    Ok(o) => {
+                        let name = o.name_any();
+                        assert_eq!(p.name_any(), name);
+                        print!("Created {}", name);
+                        Ok(name.to_string())
+                    }
+                    Err(e) => return Err(e).map_err(to_rspc_error),                        // any other case is probably bad
                 }
             })
         })

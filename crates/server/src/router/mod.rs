@@ -8,6 +8,7 @@ use sea_orm::DatabaseConnection;
 pub struct Context {
     pub db: Arc<DatabaseConnection>,
     pub docker: Arc<Docker>,
+    pub kube_client: Arc<kube::Client>,
 }
 
 pub fn create_router() -> Router<Context> {
