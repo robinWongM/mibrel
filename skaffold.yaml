@@ -11,6 +11,7 @@ manifests:
   rawYaml:
     - .devcontainer/manifests/deployment.yaml
     - .devcontainer/manifests/buildkit.yaml
+    - .devcontainer/manifests/registry.yaml
 deploy:
   helm:
     releases:

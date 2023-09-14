@@ -131,6 +131,9 @@ pub fn create_app_router() -> RouterBuilder<Context> {
 
                         tx.send(format!("Generated Dockerfile")).await.unwrap();
 
+                        // Generate Docker image full URL
+                        let image_url = format!("{}/{}:{}", "registry:5000", "test", "latest");
+
                         // Run command `buildctl`
                         let mut buildctl = Command::new("buildctl");
                         buildctl
@@ -144,7 +147,7 @@ pub fn create_app_router() -> RouterBuilder<Context> {
                             .arg("--local")
                             .arg(format!("dockerfile={}", dir.path().join(".nixpacks").display()))
                             .arg("--output")
-                            .arg("type=oci,dest=/tmp/image.tar");
+                            .arg(format!("type=image,name={},push=true,registry.insecure=true", image_url));
 
                         // Stream output from the command
                         let mut child = buildctl
