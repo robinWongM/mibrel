@@ -1,11 +1,7 @@
-use std::{
-    fs,
-    path::{Path, PathBuf},
-    sync::Arc, io::Stdout,
-};
+use std::path::Path;
 
 use git2::{build::RepoBuilder, FetchOptions};
-use k8s_openapi::{api::{apps::v1::Deployment, core::v1::{Pod, Service}}, serde_json::{json, self}};
+use k8s_openapi::{api::core::v1::{Pod, Service}, serde_json::{json, self}};
 use kube::{Api, api::PostParams, ResourceExt};
 use rspc::{Router, RouterBuilder, Type};
 use serde::Deserialize;
@@ -262,9 +258,8 @@ fn clone(dir: &Path, url: &str, sender: Option<&Sender<String>>) -> Result<Strin
 
         if let Some(sender) = sender {
             let sender_clone = sender.clone();
-            let log_clone = log.clone();
             tokio::spawn(async move {
-                sender_clone.send(log_clone).await.unwrap();
+                sender_clone.send(log).await.unwrap();
             });
         }
 
@@ -281,7 +276,7 @@ fn clone(dir: &Path, url: &str, sender: Option<&Sender<String>>) -> Result<Strin
 
     // Clone the repository
     let repo = builder.clone(url, dir).map_err(to_rspc_error)?;
-    println!("Cloned Git repository, {}", dir.display());
+    println!("Cloned Git repository, {:?}", dir);
 
     // Get the latest commit message
     let head = repo.head().map_err(to_rspc_error)?;

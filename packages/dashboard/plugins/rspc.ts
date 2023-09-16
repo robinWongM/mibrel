@@ -1,5 +1,5 @@
 import { FetchTransport, createClient } from '@rspc/client'
-import type { Procedures } from '@zyreva/rspc'
+import type { Procedures } from '@mibrel/rspc'
 
 export default defineNuxtPlugin(() => {
   const client = createClient<Procedures>({

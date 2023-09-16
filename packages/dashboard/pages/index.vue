@@ -23,9 +23,9 @@
 </template>
 
 <script setup lang="ts">
-import { Model } from '@zyreva/rspc';
+import { Model } from '@mibrel/rspc';
 import { WebsocketTransport, createClient } from '@rspc/client'
-import type { Procedures } from '@zyreva/rspc'
+import type { Procedures } from '@mibrel/rspc'
 
 const client = createClient<Procedures>({
   transport: new WebsocketTransport("ws://localhost:3000/rspc/ws"),

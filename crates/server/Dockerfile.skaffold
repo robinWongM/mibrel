@@ -8,16 +8,16 @@ RUN apk add --no-cache musl-dev pkgconfig openssl-libs-static openssl-dev
 ENV OPENSSL_LIB_DIR=/usr/lib
 ENV OPENSSL_STATIC=true
 
-WORKDIR /zyreva
+WORKDIR /mibrel
 
 COPY ./Cargo* .
 COPY ./crates ./crates
 
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
-    --mount=type=cache,target=/zyreva/target \
+    --mount=type=cache,target=/mibrel/target \
     cargo build --verbose --features=k8s && \
-    cp /zyreva/target/debug/server /zyreva/server
+    cp /mibrel/target/debug/server /mibrel/server
 
 ####################################################################################################
 ## Final image
@@ -27,7 +27,7 @@ FROM alpine:3.18.3@sha256:7144f7bab3d4c2648d7e59409f15ec52a18006a128c733fcff20d3
 RUN apk add --no-cache openssl
 
 # Create appuser
-ENV USER=zyreva
+ENV USER=mibrel
 ENV UID=10001
 
 RUN adduser \
@@ -38,16 +38,16 @@ RUN adduser \
     --uid "${UID}" \
     "${USER}"
 
-WORKDIR /zyreva
+WORKDIR /mibrel
 
 # Install buildkit
 RUN wget -O - https://github.com/moby/buildkit/releases/download/v0.12.2/buildkit-v0.12.2.linux-amd64.tar.gz | tar -xz -C /usr/bin --strip-components=1 bin/buildctl
 
 # Copy our build
-COPY --from=builder /zyreva/server ./
+COPY --from=builder /mibrel/server ./
 COPY /crates/server/.env ./.env
 
 # Use an unprivileged user.
-USER zyreva:zyreva
+USER mibrel:mibrel
 
-CMD ["/zyreva/server"]
+CMD ["/mibrel/server"]

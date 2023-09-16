@@ -16,7 +16,7 @@ importers:
       '@rspc/client':
         specifier: ^0.1.3
         version: 0.1.3
-      '@zyreva/rspc':
+      '@mibrel/rspc':
         specifier: workspace:^
         version: link:../rspc
       trpc-nuxt:

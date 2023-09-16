@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/go
 {
-	"name": "Zyreva",
+	"name": "Mibrel",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "mcr.microsoft.com/devcontainers/rust:1",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
@@ -14,7 +14,7 @@
 		},
 		"ghcr.io/devcontainers/features/kubectl-helm-minikube:1": {},
 		"ghcr.io/devcontainers/features/node:1": {},
-		"./zyreva": {}
+		"./mibrel": {}
 	},
 	"customizations": {
 		"vscode": {

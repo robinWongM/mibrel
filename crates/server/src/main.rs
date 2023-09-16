@@ -19,7 +19,7 @@ use std::{
 use tokio::signal;
 use tower_http::cors::{Any, CorsLayer};
 
-const DATABASE_URL: &str = "postgres://zyreva:zyreva@db-postgresql:5432/zyreva";
+const DATABASE_URL: &str = "postgres://mibrel:mibrel@db-postgresql:5432/mibrel";
 
 async fn connect_db() -> Result<DatabaseConnection, DbErr> {
     let db = Database::connect(DATABASE_URL).await?;
