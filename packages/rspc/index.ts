@@ -4,6 +4,7 @@ export type Procedures = {
     queries: 
         { key: "apps.analyze", input: AnalyzeRequest, result: string } | 
         { key: "apps.list", input: never, result: Model[] } | 
+        { key: "projects.list", input: never, result: Project[] } | 
         { key: "version", input: never, result: string },
     mutations: 
         { key: "apps.create", input: CreateReq, result: number } | 
@@ -12,8 +13,10 @@ export type Procedures = {
         { key: "apps.build", input: AnalyzeRequest, result: string }
 };
 
-export type CreateReq = { git_url: string }
+export type Project = { id: string; name: string | null }
+
+export type AnalyzeRequest = { id: number }
 
 export type Model = { id: number; name: string; git_url: string }
 
-export type AnalyzeRequest = { id: number }
+export type CreateReq = { git_url: string }

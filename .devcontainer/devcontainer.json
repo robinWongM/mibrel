@@ -20,6 +20,7 @@
 		"vscode": {
 			"extensions": [
 				"vue.volar",
+				"vue.vscode-typescript-vue-plugin",
 				"bradlc.vscode-tailwindcss",
 				"ckolkman.vscode-postgres",
 				"prisma.prisma"
